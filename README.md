@@ -24,13 +24,14 @@ is connected to. Fork pull requests get no OIDC token, so they upload nothing.
 
 ## Inputs
 
-| Input | Default | |
-|---|---|---|
-| `files` | (required) | JUnit XML files or globs, separated by spaces or new lines |
-| `framework` | | `pytest`, `unittest`, `go`, `node`, `jest`, `vitest`, `playwright`, `bun` or `junit`: how to read file and line |
-| `token` | | A Peak API token with Upload test results, instead of OIDC |
-| `fail-on-error` | `false` | Fail the step when the upload fails (by default it only warns) |
-| `version` | `0.8.0` | The `peak` CLI version |
+| Input | |
+|---|---|
+| `files` | JUnit XML files or patterns (`junit.xml`, `reports/**/*.xml`), separated by spaces or new lines |
+| `framework` | `pytest`, `unittest`, `go`, `node`, `jest`, `vitest`, `playwright`, `bun` or `junit`: how to read file and line |
+
+A failed upload only warns; it never fails your job. Where OIDC can't be used (a repository connected to two Peak
+workspaces, or an organization that blocks `id-token`), set `PEAK_TOKEN` in the step's `env` to a Peak API token with
+Upload test results.
 
 ## Reporter settings that add file and line
 
@@ -45,6 +46,6 @@ is connected to. Fork pull requests get no OIDC token, so they upload nothing.
 | Node | `node --test --test-reporter=junit --test-reporter-destination=junit.xml` (file only) |
 | Jest | `jest-junit` with `JEST_JUNIT_ADD_FILE_ATTRIBUTE=true` (file only) |
 
-The action downloads the pinned `peak` CLI from
+Each release of this action pins the `peak` CLI it downloads from
 [PeakInc/homebrew-tap releases](https://github.com/PeakInc/homebrew-tap/releases) and checks it against the release's
 `SHA256SUMS`. Linux and macOS runners, x64 and arm64.
