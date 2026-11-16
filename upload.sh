@@ -38,6 +38,7 @@ for pattern in "${patterns[@]}"; do
 done
 [ ${#files[@]} -gt 0 ] || fail "No JUnit files found."
 
+echo "peak $version ($os-$arch) · ${#files[@]} file(s) · job id ${PEAK_JOB_ID:-none} · $([ -n "$PEAK_TOKEN" ] && echo token || echo OIDC)"
 args=(tests upload)
 [ -n "$INPUT_FRAMEWORK" ] && args+=(--framework "$INPUT_FRAMEWORK")
 [ -n "$PEAK_TOKEN" ] || unset PEAK_TOKEN
