@@ -1,7 +1,7 @@
 # Peak test upload
 
-Uploads JUnit test results to [Peak](https://peak.inc) from GitHub Actions. With `permissions: id-token: write`, it
-uses the job's own OIDC token, so there is no secret to create.
+Uploads JUnit test results to [Peak](https://peak.inc) from GitHub Actions. Uses OIDC: give the job
+`permissions: id-token: write`.
 
 ```yaml
 jobs:
@@ -19,8 +19,7 @@ jobs:
           files: junit.xml
 ```
 
-The repository must be connected to Peak. The token can only upload this job's results, to the workspace the repository
-is connected to. Fork pull requests get no OIDC token, so they upload nothing.
+The repository must be connected to Peak.
 
 ## Inputs
 
@@ -28,10 +27,6 @@ is connected to. Fork pull requests get no OIDC token, so they upload nothing.
 |---|---|
 | `files` | JUnit XML files or patterns (`junit.xml`, `reports/**/*.xml`), separated by spaces or new lines |
 | `framework` | `pytest`, `unittest`, `go`, `node`, `jest`, `vitest`, `playwright`, `bun` or `junit`: how to read file and line |
-
-A failed upload only warns; it never fails your job. Where OIDC can't be used (a repository connected to two Peak
-workspaces, or an organization that blocks `id-token`), set `PEAK_TOKEN` in the step's `env` to a Peak API token with
-Upload test results.
 
 ## Reporter settings that add file and line
 
