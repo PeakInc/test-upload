@@ -1,0 +1,44 @@
+name: Peak test upload
+description: Upload JUnit test results to Peak from GitHub Actions, with the job's OIDC token (no secret) or a Peak token.
+author: Peak
+branding:
+  icon: upload-cloud
+  color: blue
+inputs:
+  files:
+    description: JUnit XML files or glob patterns (for example `junit.xml` or `reports/**/*.xml`), separated by spaces or new lines.
+    required: true
+  framework:
+    description: The framework that wrote the reports: pytest, unittest, go, node, jest, vitest, playwright, bun or junit.
+    required: false
+    default: ''
+  token:
+    description: A Peak API token with Upload test results. Leave empty to use the job's OIDC token, which needs `permissions: id-token: write`.
+    required: false
+    default: ''
+  fail-on-error:
+    description: Fail the step when the upload fails. By default a failed upload only warns, so it never fails your job.
+    required: false
+    default: 'false'
+  version:
+    description: The peak CLI version to use.
+    required: false
+    default: '0.8.0'
+  api-url:
+    description: Peak's address.
+    required: false
+    default: https://app.peak.inc
+runs:
+  using: composite
+  steps:
+    - name: Upload test results to Peak
+      shell: bash
+      env:
+        INPUT_FILES: ${{ inputs.files }}
+        INPUT_FRAMEWORK: ${{ inputs.framework }}
+        INPUT_FAIL_ON_ERROR: ${{ inputs.fail-on-error }}
+        INPUT_VERSION: ${{ inputs.version }}
+        PEAK_TOKEN: ${{ inputs.token }}
+        PEAK_API_URL: ${{ inputs.api-url }}
+        PEAK_JOB_ID: ${{ job.check_run_id }}
+      run: '"$GITHUB_ACTION_PATH/upload.sh"'
