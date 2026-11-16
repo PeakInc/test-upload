@@ -26,21 +26,16 @@ if [ ! -x "$dir/peak" ]; then
   tar -xzf "$dir/$asset" -C "$dir" peak
 fi
 
-# Split the input on spaces and new lines without expanding it, then expand each pattern on its own.
+# Split the input on spaces and new lines, unexpanded: the CLI matches *, ? and ** itself (and the bash 3.2 that macOS
+# runners ship has no globstar).
+set -f
 read -r -d '' -a patterns < <(printf '%s\0' "$INPUT_FILES") || true
-shopt -s globstar nullglob
-files=()
-for pattern in "${patterns[@]}"; do
-  # shellcheck disable=SC2206 # the pattern is meant to expand
-  matches=($pattern)
-  if [ ${#matches[@]} -eq 0 ]; then echo "::warning::No file matches '$pattern'."; fi
-  files+=("${matches[@]}")
-done
-[ ${#files[@]} -gt 0 ] || fail "No JUnit files found."
+set +f
+[ ${#patterns[@]} -gt 0 ] || fail "files is empty."
 
-echo "peak $version ($os-$arch) · ${#files[@]} file(s) · job id ${PEAK_JOB_ID:-none} · $([ -n "$PEAK_TOKEN" ] && echo token || echo OIDC)"
+echo "peak $version ($os-$arch) · ${#patterns[@]} pattern(s) · job id ${PEAK_JOB_ID:-none} · $([ -n "$PEAK_TOKEN" ] && echo token || echo OIDC)"
 args=(tests upload)
 [ -n "$INPUT_FRAMEWORK" ] && args+=(--framework "$INPUT_FRAMEWORK")
 [ -n "$PEAK_TOKEN" ] || unset PEAK_TOKEN
 [ -n "$PEAK_JOB_ID" ] || unset PEAK_JOB_ID
-"$dir/peak" "${args[@]}" "${files[@]}" || fail "peak tests upload failed."
+"$dir/peak" "${args[@]}" "${patterns[@]}" || fail "peak tests upload failed."
