@@ -1,7 +1,7 @@
 # Peak test upload
 
-Uploads JUnit test results to [Peak](https://peak.inc) from GitHub Actions. Uses OIDC: give the job
-`permissions: id-token: write`.
+Uploads JUnit test results and coverage reports to [Peak](https://peak.inc) from GitHub Actions. Uses OIDC: give the
+job `permissions: id-token: write`.
 
 ```yaml
 jobs:
@@ -11,15 +11,28 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      - run: pytest -o junit_family=xunit1 --junitxml=junit.xml
+        with:
+          fetch-depth: 0 # the base commit, for patch coverage
+      - run: pytest -o junit_family=xunit1 --junitxml=junit.xml --cov --cov-report=xml
       - uses: PeakInc/test-upload@v1
         if: ${{ !cancelled() }}
         with:
           framework: pytest
           files: junit.xml
+          coverage: coverage.xml
 ```
 
-The repository must be connected to Peak.
+Coverage only:
+
+```yaml
+      - uses: PeakInc/test-upload@v1
+        if: ${{ !cancelled() }}
+        with:
+          coverage: coverage/lcov.info
+          coverage-flag: unit
+```
+
+The repository must be connected to Peak. A failed upload only warns; it never fails the job.
 
 ## Inputs
 
@@ -27,6 +40,11 @@ The repository must be connected to Peak.
 |---|---|
 | `files` | JUnit XML files or patterns (`junit.xml`, `reports/**/*.xml`), separated by spaces or new lines |
 | `framework` | `pytest`, `unittest`, `go`, `node`, `jest`, `vitest`, `playwright`, `bun` or `junit`: how to read file and line |
+| `coverage` | Coverage reports or patterns: lcov, Cobertura, JaCoCo, Clover, Go coverprofile, SimpleCov or coverage.py JSON |
+| `coverage-flag` | What the coverage measured, for example `unit` or `e2e` |
+
+Set `files`, `coverage` or both. Coverage also sends the commit's changed lines (file names and line numbers only) for
+patch coverage; when the checkout lacks the base commit, patch coverage is skipped.
 
 ## Reporter settings that add file and line
 
