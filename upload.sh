@@ -36,15 +36,30 @@ fi
 
 [ -n "${PEAK_JOB_ID:-}" ] || unset PEAK_JOB_ID
 
+# Runs one upload. On failure the warning carries what the CLI said (Peak's error), on one line, with the characters
+# GitHub reads in workflow commands escaped. A skip the CLI reports itself (pull_request_target) exits 0 with its own
+# warning.
+upload() {
+  local what=$1 err="$dir/stderr" said
+  shift
+  if "$dir/peak" "$@" 2>"$err"; then
+    cat "$err" >&2
+    return 0
+  fi
+  cat "$err" >&2
+  said=$(tr '\r\n' '  ' <"$err" | sed -e 's/%/%25/g' -e 's/  */ /g' -e 's/ *$//' | cut -c1-500)
+  echo "::warning::peak $what upload failed${said:+: $said}"
+}
+
 # Each part warns on its own: a failed test upload still sends coverage, and the job never fails.
 if [ ${#files[@]} -gt 0 ]; then
   args=(tests upload)
   [ -n "${INPUT_FRAMEWORK:-}" ] && args+=(--framework "$INPUT_FRAMEWORK")
-  "$dir/peak" "${args[@]}" "${files[@]}" || echo "::warning::peak tests upload failed. Test results were not uploaded."
+  upload tests "${args[@]}" "${files[@]}"
 fi
 if [ ${#coverage[@]} -gt 0 ]; then
   args=(coverage upload)
   [ -n "${INPUT_COVERAGE_FLAG:-}" ] && args+=(--flag "$INPUT_COVERAGE_FLAG")
-  "$dir/peak" "${args[@]}" "${coverage[@]}" || echo "::warning::peak coverage upload failed. Coverage was not uploaded."
+  upload coverage "${args[@]}" "${coverage[@]}"
 fi
 exit 0
