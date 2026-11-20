@@ -63,6 +63,10 @@ request's changed lines that ran) needs. Without it, coverage still uploads and 
 
 ## Reporter settings that add file and line
 
+Any JUnit XML uploads, from any test runner. For the frameworks below, setting `framework` also lets Peak link each
+test to its file and/or line on GitHub. Without it, or for any other runner (use `junit`), results upload the same, just
+without those links.
+
 | Framework | Setting |
 |---|---|
 | pytest | `-o junit_family=xunit1 --junitxml=junit.xml` |
