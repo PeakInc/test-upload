@@ -61,6 +61,22 @@ jobs:
 `fetch-depth: 0` in the coverage examples gives the checkout the base commit, which patch coverage (the share of a pull
 request's changed lines that ran) needs. Without it, coverage still uploads and only patch coverage is skipped.
 
+## Shard, order and retry pytest
+
+With the [`peak` CLI](https://docs.peak.inc/cli), `peak tests run` can shard pytest and unittest by Peak's timings, run likely
+failures first, and retry known-flaky tests once. Keep this action to upload the report:
+
+```yaml
+      - run: peak tests run --shard ${{ matrix.shard }}/4 --failed-first --retry-flaky -- pytest -o junit_family=xunit1 --junitxml=junit.xml
+      - uses: PeakInc/test-upload@v1
+        if: ${{ !cancelled() }}
+        with:
+          framework: pytest
+          files: junit.xml
+```
+
+See [Run tests](https://docs.peak.inc/test-analytics#run-tests).
+
 ## Reporter settings that add file and line
 
 Any JUnit XML uploads, from any test runner. For the frameworks below, setting `framework` also lets Peak link each
