@@ -1,7 +1,12 @@
 # Peak test upload
 
-Uploads JUnit test results and coverage reports to [Peak](https://peak.inc) from GitHub Actions. Uses OIDC: give the
-job `permissions: id-token: write`.
+Uploads test results, coverage, or both to [Peak](https://peak.inc) from GitHub Actions. It uses the job's OIDC token,
+so there is no secret: give the job `permissions: id-token: write`.
+
+`files` and `coverage` are both optional: set either one, or both. A failed upload only warns; it never fails the job.
+The repository must be connected to Peak.
+
+**Test results and coverage**
 
 ```yaml
 jobs:
@@ -11,18 +16,24 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # the base commit, for patch coverage
       - run: pytest -o junit_family=xunit1 --junitxml=junit.xml --cov --cov-report=xml
       - uses: PeakInc/test-upload@v1
         if: ${{ !cancelled() }}
         with:
-          framework: pytest
           files: junit.xml
           coverage: coverage.xml
 ```
 
-Coverage only:
+**Test results only**
+
+```yaml
+      - uses: PeakInc/test-upload@v1
+        if: ${{ !cancelled() }}
+        with:
+          files: junit.xml
+```
+
+**Coverage only**
 
 ```yaml
       - uses: PeakInc/test-upload@v1
@@ -31,18 +42,17 @@ Coverage only:
           coverage: coverage/lcov.info
 ```
 
-The repository must be connected to Peak. A failed upload only warns; it never fails the job.
-
 ## Inputs
 
-| Input | |
-|---|---|
-| `files` | JUnit XML files or patterns (`junit.xml`, `reports/**/*.xml`), separated by spaces or new lines |
-| `framework` | `pytest`, `unittest`, `go`, `node`, `jest`, `vitest`, `playwright`, `bun` or `junit`: how to read file and line |
-| `coverage` | Coverage reports or patterns: lcov, Cobertura, JaCoCo, Clover, Go coverprofile, SimpleCov or coverage.py JSON |
+| Input | Required | |
+|---|---|---|
+| `files` | Optional (set `files`, `coverage` or both) | JUnit XML files or patterns (`junit.xml`, `reports/**/*.xml`), separated by spaces or new lines |
+| `coverage` | Optional (set `files`, `coverage` or both) | Coverage reports or patterns: lcov, Cobertura, JaCoCo, Clover, Go coverprofile, SimpleCov or coverage.py JSON |
+| `framework` | Optional | `pytest`, `unittest`, `go`, `node`, `jest`, `vitest`, `playwright`, `bun` or `junit`. Adds each test's file and line for code links; results upload without it |
 
-Set `files`, `coverage` or both. Coverage also sends the commit's changed lines (file names and line numbers only) for
-patch coverage; when the checkout lacks the base commit, patch coverage is skipped.
+Patch coverage (the share of a pull request's changed lines that ran) needs the base commit in the checkout. It is
+optional: add `fetch-depth: 0` to `actions/checkout` to get it; without it, coverage still uploads and patch coverage is
+skipped.
 
 ## Reporter settings that add file and line
 
