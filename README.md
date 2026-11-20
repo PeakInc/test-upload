@@ -29,7 +29,6 @@ Coverage only:
         if: ${{ !cancelled() }}
         with:
           coverage: coverage/lcov.info
-          coverage-flag: unit
 ```
 
 The repository must be connected to Peak. A failed upload only warns; it never fails the job.
@@ -41,7 +40,6 @@ The repository must be connected to Peak. A failed upload only warns; it never f
 | `files` | JUnit XML files or patterns (`junit.xml`, `reports/**/*.xml`), separated by spaces or new lines |
 | `framework` | `pytest`, `unittest`, `go`, `node`, `jest`, `vitest`, `playwright`, `bun` or `junit`: how to read file and line |
 | `coverage` | Coverage reports or patterns: lcov, Cobertura, JaCoCo, Clover, Go coverprofile, SimpleCov or coverage.py JSON |
-| `coverage-flag` | What the coverage measured, for example `unit` or `e2e` |
 
 Set `files`, `coverage` or both. Coverage also sends the commit's changed lines (file names and line numbers only) for
 patch coverage; when the checkout lacks the base commit, patch coverage is skipped.

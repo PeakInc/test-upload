@@ -58,8 +58,6 @@ if [ ${#files[@]} -gt 0 ]; then
   upload tests "${args[@]}" "${files[@]}"
 fi
 if [ ${#coverage[@]} -gt 0 ]; then
-  args=(coverage upload)
-  [ -n "${INPUT_COVERAGE_FLAG:-}" ] && args+=(--flag "$INPUT_COVERAGE_FLAG")
-  upload coverage "${args[@]}" "${coverage[@]}"
+  upload coverage coverage upload "${coverage[@]}"
 fi
 exit 0

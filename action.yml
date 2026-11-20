@@ -17,10 +17,6 @@ inputs:
     description: 'Coverage reports or patterns (for example `coverage/lcov.info`), separated by spaces or new lines.'
     required: false
     default: ''
-  coverage-flag:
-    description: 'What the coverage measured, for example `unit`: per-flag coverage.'
-    required: false
-    default: ''
 runs:
   using: composite
   steps:
@@ -30,6 +26,5 @@ runs:
         INPUT_FILES: ${{ inputs.files }}
         INPUT_FRAMEWORK: ${{ inputs.framework }}
         INPUT_COVERAGE: ${{ inputs.coverage }}
-        INPUT_COVERAGE_FLAG: ${{ inputs.coverage-flag }}
         PEAK_JOB_ID: ${{ job.check_run_id }}
       run: '"$GITHUB_ACTION_PATH/upload.sh"'
