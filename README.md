@@ -22,8 +22,8 @@ jobs:
       - uses: PeakInc/test-upload@v1
         if: ${{ !cancelled() }}
         with:
-          files: junit.xml
-          coverage: coverage.xml
+          files: junit.xml  # optional
+          coverage: coverage.xml # optional
 ```
 
 **Test results only**
