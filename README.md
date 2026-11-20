@@ -16,6 +16,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # for patch coverage
       - run: pytest -o junit_family=xunit1 --junitxml=junit.xml --cov --cov-report=xml
       - uses: PeakInc/test-upload@v1
         if: ${{ !cancelled() }}
@@ -36,6 +38,10 @@ jobs:
 **Coverage only**
 
 ```yaml
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # for patch coverage
+      # … your tests …
       - uses: PeakInc/test-upload@v1
         if: ${{ !cancelled() }}
         with:
@@ -50,9 +56,8 @@ jobs:
 | `coverage` | Optional (set `files`, `coverage` or both) | Coverage reports or patterns: lcov, Cobertura, JaCoCo, Clover, Go coverprofile, SimpleCov or coverage.py JSON |
 | `framework` | Optional | `pytest`, `unittest`, `go`, `node`, `jest`, `vitest`, `playwright`, `bun` or `junit`. Adds each test's file and line for code links; results upload without it |
 
-Patch coverage (the share of a pull request's changed lines that ran) needs the base commit in the checkout. It is
-optional: add `fetch-depth: 0` to `actions/checkout` to get it; without it, coverage still uploads and patch coverage is
-skipped.
+`fetch-depth: 0` in the coverage examples gives the checkout the base commit, which patch coverage (the share of a pull
+request's changed lines that ran) needs. Without it, coverage still uploads and only patch coverage is skipped.
 
 ## Reporter settings that add file and line
 
