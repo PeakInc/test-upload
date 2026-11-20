@@ -22,6 +22,7 @@ jobs:
       - uses: PeakInc/test-upload@v1
         if: ${{ !cancelled() }}
         with:
+          framework: pytest # optional
           files: junit.xml  # optional
           coverage: coverage.xml # optional
 ```
@@ -32,6 +33,7 @@ jobs:
       - uses: PeakInc/test-upload@v1
         if: ${{ !cancelled() }}
         with:
+          framework: pytest
           files: junit.xml
 ```
 
