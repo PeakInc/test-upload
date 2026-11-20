@@ -37,8 +37,7 @@ fi
 [ -n "${PEAK_JOB_ID:-}" ] || unset PEAK_JOB_ID
 
 # Runs one upload. On failure the warning carries what the CLI said (Peak's error), on one line, with the characters
-# GitHub reads in workflow commands escaped. A skip the CLI reports itself (pull_request_target) exits 0 with its own
-# warning.
+# GitHub reads in workflow commands escaped.
 upload() {
   local what=$1 err="$dir/stderr" said
   shift
