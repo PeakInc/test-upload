@@ -51,14 +51,6 @@ jobs:
 `env`. A multi-line script runs as written, without shard, failed-first or retry-flaky.
 See [Run tests](https://docs.peak.inc/test-analytics#run-tests).
 
-| Runner | `shard` | `failed-first` | `retry-flaky` |
-|---|---|---|---|
-| pytest | Yes, by whole file | Yes, by file | Yes, in the same run; the report shows both attempts |
-| unittest | Yes, by whole file | Yes, by file | Yes, in the same run; the report shows the second |
-| Go, Node, Jest, bun, Vitest, Playwright | No | No | No |
-
-Other runners run as written: every shard runs every test, and the report still uploads.
-
 ## Inputs
 
 | Input | |
@@ -73,18 +65,24 @@ Other runners run as written: every shard runs every test, and the report still 
 
 The action also puts `peak` on `PATH` for later steps.
 
-## Reporter settings that add file and line
+## Frameworks
 
-| Framework | Setting |
-|---|---|
-| pytest | `-o junit_family=xunit1 --junitxml=junit.xml` |
-| unittest | `xmlrunner` (unittest-xml-reporting) |
-| Go | `gotestsum --junitfile junit.xml` (the CLI adds file and line from the checkout) |
-| bun | `bun test --reporter=junit --reporter-outfile=junit.xml` |
-| Vitest | `vitest run --reporter=junit --outputFile=junit.xml` (file only) |
-| Playwright | `PLAYWRIGHT_JUNIT_OUTPUT_NAME=junit.xml playwright test --reporter=junit` (file only) |
-| Node | `node --test --test-reporter=junit --test-reporter-destination=junit.xml` (file only) |
-| Jest | `jest-junit` with `JEST_JUNIT_ADD_FILE_ATTRIBUTE=true` (file only) |
+Any JUnit XML uploads. With `framework` and the reporter setting below, Peak also links each test to its file (and line)
+on GitHub.
+
+| Framework | Reporter setting | Links | `shard` | `failed-first` | `retry-flaky` |
+|---|---|---|---|---|---|
+| pytest | `-o junit_family=xunit1 --junitxml=junit.xml` | File and line | Yes | Yes | Yes |
+| unittest | `xmlrunner` (unittest-xml-reporting) | File and line | Yes | Yes | Yes |
+| Go | `gotestsum --junitfile junit.xml` | File and line | No | No | No |
+| bun | `bun test --reporter=junit --reporter-outfile=junit.xml` | File and line | No | No | No |
+| Vitest | `vitest run --reporter=junit --outputFile=junit.xml` | File | No | No | No |
+| Playwright | `PLAYWRIGHT_JUNIT_OUTPUT_NAME=junit.xml playwright test --reporter=junit` | File | No | No | No |
+| Node | `node --test --test-reporter=junit --test-reporter-destination=junit.xml` | File | No | No | No |
+| Jest | `jest-junit` with `JEST_JUNIT_ADD_FILE_ATTRIBUTE=true` | File | No | No | No |
+
+`shard` and `failed-first` work by whole test file. Frameworks without them run as written: every shard runs every
+test, and the report still uploads.
 
 Each release of this action pins the `peak` CLI it downloads from
 [PeakInc/homebrew-tap releases](https://github.com/PeakInc/homebrew-tap/releases) and checks it against the release's
