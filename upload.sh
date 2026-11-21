@@ -5,7 +5,17 @@
 # fails the job.
 set -uo pipefail
 
-VERSION=0.9.0
+VERSION=0.10.0
+# Each platform's sha256 for VERSION, from its release's SHA256SUMS and the tap's reviewed formula, pinned here so a
+# replaced release asset can't pass the check. Update them with VERSION.
+sha256_for() {
+  case "$1" in
+    linux-x64) echo 9d18330e8f64248858ac7615458520ae43b1b1b53da7506d237381231f6e90b0 ;;
+    linux-arm64) echo ab95a057d35010af8dee99ec4ee19a8e9a913743fb437e3e098d819f71d55dd9 ;;
+    darwin-x64) echo 21b9b7ad4a639221ed9c294bf4ba5e496b4ba3ff79d1a5499e651abb3624700d ;;
+    darwin-arm64) echo 3014e50e2c7c2a443290704fd3d864a8cc9265906d5f788571cec0e0e101d004 ;;
+  esac
+}
 
 warn() { echo "::warning::$1"; }
 is_true() { case "$1" in true | True | TRUE | 1 | yes) return 0 ;; *) return 1 ;; esac; }
@@ -17,14 +27,13 @@ install() {
   case "$(uname -s)" in Linux) os=linux ;; Darwin) os=darwin ;; *) warn "The peak CLI runs on Linux and macOS runners only."; return 1 ;; esac
   case "$(uname -m)" in x86_64 | amd64) arch=x64 ;; aarch64 | arm64) arch=arm64 ;; *) warn "Unsupported CPU for the peak CLI: $(uname -m)."; return 1 ;; esac
   asset="peak-$VERSION-$os-$arch.tar.gz"
+  expected=$(sha256_for "$os-$arch")
   base="https://github.com/PeakInc/homebrew-tap/releases/download/v$VERSION"
   mkdir -p "$dir"
   if [ ! -x "$dir/peak" ]; then
     curl -fsSL --retry 3 -o "$dir/$asset" "$base/$asset" || { warn "Could not download the peak CLI."; return 1; }
-    curl -fsSL --retry 3 -o "$dir/SHA256SUMS" "$base/SHA256SUMS" || { warn "Could not download the peak CLI's checksums."; return 1; }
-    expected=$(awk -v f="$asset" '$2 == f { print $1 }' "$dir/SHA256SUMS")
     if command -v sha256sum >/dev/null; then actual=$(sha256sum "$dir/$asset" | cut -d' ' -f1); else actual=$(shasum -a 256 "$dir/$asset" | cut -d' ' -f1); fi
-    [ -n "$expected" ] && [ "$expected" = "$actual" ] || { warn "The peak CLI download does not match its published checksum."; return 1; }
+    [ -n "$expected" ] && [ "$expected" = "$actual" ] || { warn "The peak CLI download does not match the checksum this action pins."; return 1; }
     tar -xzf "$dir/$asset" -C "$dir" peak || { warn "Could not unpack the peak CLI."; return 1; }
   fi
   peak="$dir/peak"

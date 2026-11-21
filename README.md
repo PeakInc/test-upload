@@ -120,5 +120,5 @@ to its file (and line) on GitHub. For any other runner, use `junit`: results upl
 test, and the report still uploads.
 
 Each release of this action pins the `peak` CLI it downloads from
-[PeakInc/homebrew-tap releases](https://github.com/PeakInc/homebrew-tap/releases) and checks it against the release's
-`SHA256SUMS`. Linux and macOS runners, x64 and arm64.
+[PeakInc/homebrew-tap releases](https://github.com/PeakInc/homebrew-tap/releases) and checks it against that version's
+sha256, written in the action itself. Linux and macOS runners, x64 and arm64.
