@@ -63,7 +63,7 @@ request's changed lines that ran) needs. Without it, coverage still uploads and 
 
 ## Shard, order and retry pytest
 
-With the [`peak` CLI](https://docs.peak.inc/cli), `peak tests run` can shard pytest and unittest by Peak's timings, run likely
+With the [`peak` CLI](https://docs.peak.inc/cli) 0.9.0 or later, `peak tests run` can shard pytest and unittest by Peak's timings, run likely
 failures first, and retry known-flaky tests once. Keep this action to upload the report:
 
 ```yaml
