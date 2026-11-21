@@ -51,6 +51,14 @@ jobs:
 `env`. A multi-line script runs as written, without shard, failed-first or retry-flaky.
 See [Run tests](https://docs.peak.inc/test-analytics#run-tests).
 
+| Runner | `shard` | `failed-first` | `retry-flaky` |
+|---|---|---|---|
+| pytest | Yes, by whole file | Yes, by file | Yes, in the same run; the report shows both attempts |
+| unittest | Yes, by whole file | Yes, by file | Yes, in the same run; the report shows the second |
+| Go, Node, Jest, bun, Vitest, Playwright | No | No | No |
+
+Other runners run as written: every shard runs every test, and the report still uploads.
+
 ## Inputs
 
 | Input | |
