@@ -1,7 +1,12 @@
 # Peak test upload
 
-Uploads JUnit test results to [Peak](https://peak.inc) from GitHub Actions, and can run the tests too. Uses OIDC: give
-the job `permissions: id-token: write`. The repository must be connected to Peak.
+Uploads test results, coverage, or both to [Peak](https://peak.inc) from GitHub Actions, and can run the tests too. It
+uses the job's OIDC token, so there is no secret: give the job `permissions: id-token: write`.
+
+`files` and `coverage` are both optional: set either one, or both. A failed upload only warns; it never fails the job.
+The repository must be connected to Peak.
+
+**Test results and coverage**
 
 ```yaml
 jobs:
@@ -11,13 +16,42 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      - run: pytest -o junit_family=xunit1 --junitxml=junit.xml
+        with:
+          fetch-depth: 0 # for patch coverage
+      - run: pytest -o junit_family=xunit1 --junitxml=junit.xml --cov --cov-report=xml
+      - uses: PeakInc/test-upload@v1
+        if: ${{ !cancelled() }}
+        with:
+          framework: pytest # optional
+          files: junit.xml  # optional
+          coverage: coverage.xml # optional
+```
+
+**Test results only**
+
+```yaml
       - uses: PeakInc/test-upload@v1
         if: ${{ !cancelled() }}
         with:
           framework: pytest
           files: junit.xml
 ```
+
+**Coverage only**
+
+```yaml
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # for patch coverage
+      # … your tests …
+      - uses: PeakInc/test-upload@v1
+        if: ${{ !cancelled() }}
+        with:
+          coverage: coverage/lcov.info
+```
+
+`fetch-depth: 0` in the coverage examples gives the checkout the base commit, which patch coverage (the share of a pull
+request's changed lines that ran) needs. Without it, coverage still uploads and only patch coverage is skipped.
 
 ## Run the tests too
 
@@ -55,10 +89,11 @@ See [Run tests](https://docs.peak.inc/test-analytics#run-tests).
 
 | Input | |
 |---|---|
-| `files` | JUnit XML files or patterns (`junit.xml`, `reports/**/*.xml`), separated by spaces or new lines |
-| `framework` | `pytest`, `unittest`, `go`, `node`, `jest`, `vitest`, `playwright`, `bun` or `junit`: how to read file and line |
+| `files` | Optional (set `files`, `coverage` or both). JUnit XML files or patterns (`junit.xml`, `reports/**/*.xml`), separated by spaces or new lines |
+| `coverage` | Optional (set `files`, `coverage` or both). Coverage reports or patterns: lcov, Cobertura, JaCoCo, Clover, Go coverprofile, SimpleCov or coverage.py JSON |
+| `framework` | Optional. `pytest`, `unittest`, `go`, `node`, `jest`, `vitest`, `playwright`, `bun` or `junit`. Adds each test's file and line for code links; results upload without it |
 | `run` | Optional. The test command to run before uploading |
-| `working-directory` | Optional. Where to run `run` and find `files` |
+| `working-directory` | Optional. Where to run `run` and find `files` and `coverage` |
 | `shard` | Optional, with `run`: this shard as `I/N` |
 | `failed-first` | Optional, with `run`: changed and recently failing test files first |
 | `retry-flaky` | Optional, with `run`: rerun a failed test once when Peak lists it as flaky |
@@ -67,8 +102,8 @@ The action also puts `peak` on `PATH` for later steps.
 
 ## Frameworks
 
-Any JUnit XML uploads. With `framework` and the reporter setting below, Peak also links each test to its file (and line)
-on GitHub.
+Any JUnit XML uploads, from any test runner. With `framework` and the reporter setting below, Peak also links each test
+to its file (and line) on GitHub. For any other runner, use `junit`: results upload the same, without the links.
 
 | Framework | Reporter setting | Links | `shard` | `failed-first` | `retry-flaky` |
 |---|---|---|---|---|---|
